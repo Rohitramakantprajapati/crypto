@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DecryptTrace – Secure Decryption Provenance System</title>
+  <meta name="description" content="DecryptTrace: A tamper-evident, cryptographically verifiable system that records every decryption event with digital signatures and an immutable ledger." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════ LOADER ═══ -->
+  <div id="page-loader">
+    <div class="loader-ring"></div>
+    <span class="loader-text">DecryptTrace</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ PARTICLES BG ═══ -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- ═══════════════════════════════════════════ AUTH SCREEN ═══ -->
+  <div id="auth-screen" class="screen active">
+    <div class="auth-container">
+      <div class="auth-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="20" width="32" height="22" rx="4" fill="url(#lockGrad)"/>
+            <path d="M16 20V16a8 8 0 0116 0v4" stroke="url(#lockGrad2)" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="24" cy="31" r="3" fill="#0a0e1a"/>
+            <rect x="22.5" y="31" width="3" height="5" rx="1.5" fill="#0a0e1a"/>
+            <defs>
+              <linearGradient id="lockGrad" x1="8" y1="20" x2="40" y2="42" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#06b6d4"/>
+              </linearGradient>
+              <linearGradient id="lockGrad2" x1="16" y1="12" x2="32" y2="20" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#06b6d4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h1 class="brand-name">DecryptTrace</h1>
+        <p class="brand-tagline">Cryptographic Decryption Provenance System</p>
+        <div class="badge-row">
+          <span class="badge">AES-256</span>
+          <span class="badge">SHA-256</span>
+          <span class="badge">RSA Signatures</span>
+          <span class="badge">Immutable Ledger</span>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+          <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="login-username">Username or Email</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input type="text" id="login-username" placeholder="Enter username or email" required autocomplete="username" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="login-password" placeholder="Enter password" required autocomplete="current-password" />
+              <button type="button" class="toggle-pw" onclick="togglePassword('login-password', this)">👁</button>
+            </div>
+          </div>
+          <div id="login-error" class="form-error hidden"></div>
+          <button type="submit" class="btn-primary btn-full" id="login-btn">
+            <span class="btn-text">Sign In</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+          <p class="auth-hint">Demo: admin / admin123 &nbsp;|&nbsp; user / user123</p>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label for="reg-username">Username</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input type="text" id="reg-username" placeholder="Choose a username" required autocomplete="username" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✉️</span>
+              <input type="email" id="reg-email" placeholder="your@email.com" required autocomplete="email" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reg-role">Role</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🎭</span>
+              <select id="reg-role">
+                <option value="user">User (Can upload & decrypt own files)</option>
+                <option value="auditor">Auditor (Can view all records)</option>
+                <option value="admin">Admin (Full access)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="reg-password" placeholder="Min 6 characters" required autocomplete="new-password" />
+              <button type="button" class="toggle-pw" onclick="togglePassword('reg-password', this)">👁</button>
+            </div>
+          </div>
+          <div id="register-error" class="form-error hidden"></div>
+          <button type="submit" class="btn-primary btn-full" id="register-btn">
+            <span class="btn-text">Create Account</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ MAIN APP ═══ -->
+  <div id="app-screen" class="screen">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon-sm">🔐</div>
+        <span>DecryptTrace</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="showPage('files')" id="nav-files">
+          <span class="nav-icon">📁</span>
+          <span class="nav-label">Files</span>
+        </button>
+        <button class="nav-item" onclick="showPage('upload')" id="nav-upload">
+          <span class="nav-icon">⬆️</span>
+          <span class="nav-label">Upload & Encrypt</span>
+        </button>
+        <button class="nav-item" onclick="showPage('provenance')" id="nav-provenance">
+          <span class="nav-icon">🔗</span>
+          <span class="nav-label">Provenance Records</span>
+        </button>
+        <button class="nav-item" onclick="showPage('verify')" id="nav-verify">
+          <span class="nav-icon">✅</span>
+          <span class="nav-label">Verify Record</span>
+        </button>
+        <button class="nav-item" onclick="showPage('ledger')" id="nav-ledger">
+          <span class="nav-icon">⛓️</span>
+          <span class="nav-label">Immutable Ledger</span>
+        </button>
+        <button class="nav-item" id="nav-admin" onclick="showPage('admin')" style="display:none">
+          <span class="nav-icon">🛡️</span>
+          <span class="nav-label">Admin Panel</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info-sidebar" id="sidebar-user-info">
+          <div class="user-avatar" id="sidebar-avatar">U</div>
+          <div>
+            <div class="user-name-sm" id="sidebar-username">User</div>
+            <div class="user-role-badge" id="sidebar-role">user</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()">⏻ Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Mobile header -->
+    <header class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" id="hamburger-btn">☰</button>
+      <span class="mobile-brand">DecryptTrace</span>
+      <button class="btn-logout-sm" onclick="handleLogout()">⏻</button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+
+      <!-- ─── DASHBOARD PAGE ─── -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h2 class="page-title">Dashboard</h2>
+          <p class="page-subtitle" id="dash-greeting">Welcome back!</p>
+        </div>
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📁</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-files">–</div>
+              <div class="stat-label">Encrypted Files</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔓</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-decryptions">–</div>
+              <div class="stat-label">Decryptions Logged</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⛓️</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-ledger">–</div>
+              <div class="stat-label">Ledger Blocks</div>
+            </div>
+          </div>
+          <div class="stat-card" id="stat-card-users" style="display:none">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-users">–</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Recent Decryption Events</div>
+        <div class="table-card" id="dashboard-recent">
+          <div class="loading-state">Loading events...</div>
+        </div>
+
+        <div class="section-title" style="margin-top:2rem">Ledger Chain Status</div>
+        <div class="ledger-status-card" id="ledger-status-card">
+          <div class="loading-state">Checking ledger...</div>
+        </div>
+      </section>
+
+      <!-- ─── FILES PAGE ─── -->
+      <section class="page" id="page-files">
+        <div class="page-header">
+          <h2 class="page-title">Encrypted Files</h2>
+          <button class="btn-primary" onclick="showPage('upload')">⬆️ Upload File</button>
+        </div>
+        <div class="table-card" id="files-table">
+          <div class="loading-state">Loading files...</div>
+        </div>
+      </section>
+
+      <!-- ─── UPLOAD PAGE ─── -->
+      <section class="page" id="page-upload">
+        <div class="page-header">
+          <h2 class="page-title">Upload & Encrypt File</h2>
+          <p class="page-subtitle">Files are encrypted with AES-256-CBC before storage</p>
+        </div>
+        <div class="upload-card">
+          <div class="drop-zone" id="drop-zone"
+               ondragover="event.preventDefault(); this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleDrop(event)">
+            <div class="drop-icon">📂</div>
+            <div class="drop-text">Drag & drop your file here</div>
+            <div class="drop-subtext">or</div>
+            <label class="btn-outline" for="file-input">Browse Files</label>
+            <input type="file" id="file-input" class="hidden" onchange="handleFileSelect(event)" />
+            <div class="drop-hint">Supports: TXT, PDF, DOCX, CSV, JSON, XML, PNG, JPG (max 16 MB)</div>
+          </div>
+          <div id="file-preview" class="file-preview hidden">
+            <div class="file-preview-icon">📄</div>
+            <div class="file-preview-info">
+              <div class="file-preview-name" id="preview-name"></div>
+              <div class="file-preview-size" id="preview-size"></div>
+            </div>
+            <button class="btn-danger-sm" onclick="clearFileSelection()">✕</button>
+          </div>
+          <div id="upload-error" class="form-error hidden"></div>
+          <div id="upload-progress" class="progress-bar-wrapper hidden">
+            <div class="progress-bar" id="upload-progress-bar"></div>
+          </div>
+          <button class="btn-primary btn-upload" id="upload-btn" onclick="uploadFile()" disabled>
+            🔒 Encrypt & Upload
+          </button>
+          <div id="upload-success" class="upload-success hidden"></div>
+        </div>
+      </section>
+
+      <!-- ─── PROVENANCE RECORDS PAGE ─── -->
+      <section class="page" id="page-provenance">
+        <div class="page-header">
+          <h2 class="page-title">Provenance Records</h2>
+          <p class="page-subtitle">Full audit trail of all decryption events</p>
+        </div>
+        <div class="table-card" id="provenance-table">
+          <div class="loading-state">Loading records...</div>
+        </div>
+      </section>
+
+      <!-- ─── VERIFY PAGE ─── -->
+      <section class="page" id="page-verify">
+        <div class="page-header">
+          <h2 class="page-title">Verify Provenance Record</h2>
+          <p class="page-subtitle">Cryptographically verify any decryption event's authenticity</p>
+        </div>
+        <div class="verify-card">
+          <div class="form-group">
+            <label for="verify-record-id">Provenance Record ID</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔍</span>
+              <input type="number" id="verify-record-id" placeholder="Enter record ID (e.g. 1)" min="1" />
+            </div>
+          </div>
+          <button class="btn-primary" onclick="verifyRecord()">🔎 Verify Record</button>
+          <div id="verify-result" class="verify-result hidden"></div>
+        </div>
+      </section>
+
+      <!-- ─── LEDGER PAGE ─── -->
+      <section class="page" id="page-ledger">
+        <div class="page-header">
+          <h2 class="page-title">Immutable Ledger</h2>
+          <p class="page-subtitle">Blockchain-style append-only record of all provenance events</p>
+        </div>
+        <div class="ledger-controls">
+          <button class="btn-primary" onclick="loadLedger()">🔄 Refresh Ledger</button>
+          <button class="btn-outline" onclick="verifyFullLedger()">⛓️ Verify Full Chain</button>
+        </div>
+        <div id="ledger-verify-banner" class="hidden"></div>
+        <div id="ledger-blocks" class="ledger-blocks">
+          <div class="loading-state">Loading ledger...</div>
+        </div>
+      </section>
+
+      <!-- ─── ADMIN PAGE ─── -->
+      <section class="page" id="page-admin">
+        <div class="page-header">
+          <h2 class="page-title">Admin Panel</h2>
+          <p class="page-subtitle">System management and access logs</p>
+        </div>
+        <div class="admin-grid">
+          <div class="admin-section">
+            <div class="section-title">User Management</div>
+            <div id="admin-users-table" class="table-card">
+              <div class="loading-state">Loading users...</div>
+            </div>
+          </div>
+          <div class="admin-section">
+            <div class="section-title">Access Logs</div>
+            <div id="admin-logs-table" class="table-card">
+              <div class="loading-state">Loading logs...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ MODALS ═══ -->
+
+  <!-- Record Detail Modal -->
+  <div class="modal-overlay hidden" id="record-modal-overlay" onclick="closeModal('record-modal')">
+    <div class="modal" id="record-modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal('record-modal')">✕</button>
+      <div id="record-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

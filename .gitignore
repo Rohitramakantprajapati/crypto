@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+env/
+.venv/
+ENV/
+
+# Environment secrets
+.env
+
+# Database & uploads & ledger (runtime data)
+decrypttrace.db
+uploads/
+ledger/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Notion script (has API token)
+create_notion_doc.py
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
